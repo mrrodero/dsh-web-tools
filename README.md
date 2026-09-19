@@ -3,15 +3,19 @@
 Locally hosted, API-free web capability bundle for [DeepSeek Harness](https://github.com/deepseek-ai/deepseek-harness):
 self-web-search, fetching, rendering, crawling, and a local corpus index — no keys, no quotas, no SaaS.
 
-One bundle, five packages:
+One bundle, four plugin modules — a single npm package (`@deepseek-ai/dsh-web-tools`)
+with four subpath entry points, because pnpm does not resolve `workspace:`
+dependencies inside a git-dependency clone:
 
-| Package | Contributes |
+| Module (subpath) | Contributes |
 | --- | --- |
-| [`web-search-searxng`](packages/web-search-searxng) | `web_search` backend: a `WebSearchProvider` for a self-hosted [SearXNG](https://docs.searxng.org/) instance |
-| [`web-fetch-browser`](packages/web-fetch-browser) | `web_render` tool + `browser` fetch provider: headless Chromium (Playwright) rendering to markdown |
-| [`web-crawl`](packages/web-crawl) | `web_crawl` tool: same-domain BFS crawl with robots.txt policy, HTTP or browser rendering, auto-indexing |
-| [`web-local-index`](packages/web-local-index) | `local_search` tool + `indexed` fetch provider: SQLite FTS5 + MiniLM embeddings over everything fetched/crawled |
-| root | the bundle itself (patch rows that install all four) |
+| [`web-search-searxng`](src/web-search-searxng) | `web_search` backend: a `WebSearchProvider` for a self-hosted [SearXNG](https://docs.searxng.org/) instance |
+| [`web-fetch-browser`](src/web-fetch-browser) | `web_render` tool + `browser` fetch provider: headless Chromium (Playwright) rendering to markdown |
+| [`web-crawl`](src/web-crawl) | `web_crawl` tool: same-domain BFS crawl with robots.txt policy, HTTP or browser rendering, auto-indexing |
+| [`web-local-index`](src/web-local-index) | `local_search` tool + `indexed` fetch provider: SQLite FTS5 + MiniLM embeddings over everything fetched/crawled |
+
+The bundle's `cordis.patch.yml` registers all four modules as plugin rows
+(`@deepseek-ai/dsh-web-tools/<module>`).
 
 ## Install
 
@@ -21,17 +25,13 @@ Install the whole bundle into a profile (e.g. `web`):
 dsh plugin --profile web add github:mrrodero/dsh-web-tools#<commit-sha>
 ```
 
-pnpm blocks dependency build scripts by default; allow this bundle's `prepare` builds in the
-profile's `pnpm-workspace.yaml`:
+pnpm blocks dependency build scripts by default; allow the bundle's `prepare`
+build (which compiles all four modules) in the profile's `pnpm-workspace.yaml`:
 
 ```yaml
 allowBuilds:
   '@deepseek-ai/dsh-web-tools': true
-  '@deepseek-ai/dsh-web-search-searxng': true
-  '@deepseek-ai/dsh-web-fetch-browser': true
-  '@deepseek-ai/dsh-web-crawl': true
-  '@deepseek-ai/dsh-web-local-index': true
-  esbuild: true
+  esbuild: false          # transitive dep of tsdown; platform binary ships prebuilt
   onnxruntime-node: true
 ```
 
@@ -98,9 +98,9 @@ Bundle membership changes require a server restart; patch edits hot-reload.
 
 ```sh
 pnpm install
-pnpm -r build
-pnpm -r test
+pnpm build
+pnpm test
 ```
 
 Node ≥ 24 (uses built-in `node:sqlite`). Playwright's Chromium is downloaded on
-`pnpm install` (postinstall) for the browser packages.
+`pnpm install` (postinstall) for the browser module.

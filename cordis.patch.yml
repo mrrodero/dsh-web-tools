@@ -1,13 +1,15 @@
-# Bundle layer: register the web capability plugins with the host composition.
-# Search/fetch providers join the ctx.web registry; the tool plugins register
-# their model-facing tools (web_render, web_crawl, local_search) in the global
-# tool layer, which every agent scope inherits.
+# Bundle layer: register the four web-capability plugins with the host
+# composition. Each row's config can be overridden by the profile's own
+# cordis.patch.yml (e.g. the SearXNG baseURL, the index dbPath, crawl bounds).
 - insert:
     - id: web-search-searxng
-      name: '@deepseek-ai/dsh-web-search-searxng'
+      name: '@deepseek-ai/dsh-web-tools/web-search-searxng'
+
     - id: web-fetch-browser
-      name: '@deepseek-ai/dsh-web-fetch-browser'
+      name: '@deepseek-ai/dsh-web-tools/web-fetch-browser'
+
     - id: web-crawl
-      name: '@deepseek-ai/dsh-web-crawl'
+      name: '@deepseek-ai/dsh-web-tools/web-crawl'
+
     - id: web-local-index
-      name: '@deepseek-ai/dsh-web-local-index'
+      name: '@deepseek-ai/dsh-web-tools/web-local-index'

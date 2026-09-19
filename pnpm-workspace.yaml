@@ -1,5 +1,5 @@
-packages:
-  - 'packages/*'
+# Build-script allowlist for this project's own install (esbuild is a
+# transitive dep of tsdown; onnxruntime-node postinstalls its native lib).
 allowBuilds:
-  esbuild: true
+  esbuild: false
   onnxruntime-node: true

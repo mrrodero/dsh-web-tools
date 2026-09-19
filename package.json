@@ -1,7 +1,7 @@
 {
   "name": "@deepseek-ai/dsh-web-tools",
-  "description": "Locally-hosted, API-free web capability bundle for DeepSeek Harness: SearXNG search, headless-browser fetch, site crawling, and local corpus search",
-  "version": "0.1.0",
+  "description": "Self-hosted web capability bundle for the DeepSeek Harness: SearXNG search, headless-browser fetch/render, bounded site crawling, and a local corpus index (SQLite FTS5 + MiniLM embeddings)",
+  "version": "0.2.0",
   "publishConfig": {
     "access": "public"
   },
@@ -17,7 +17,22 @@
       "types": "./lib/index.d.ts",
       "default": "./lib/index.js"
     },
-    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./web-search-searxng": {
+      "types": "./lib/web-search-searxng/index.d.ts",
+      "default": "./lib/web-search-searxng/index.js"
+    },
+    "./web-fetch-browser": {
+      "types": "./lib/web-fetch-browser/index.d.ts",
+      "default": "./lib/web-fetch-browser/index.js"
+    },
+    "./web-crawl": {
+      "types": "./lib/web-crawl/index.d.ts",
+      "default": "./lib/web-crawl/index.js"
+    },
+    "./web-local-index": {
+      "types": "./lib/web-local-index/index.d.ts",
+      "default": "./lib/web-local-index/index.js"
+    },
     "./package.json": "./package.json"
   },
   "files": [
@@ -27,7 +42,8 @@
   ],
   "scripts": {
     "build": "tsdown",
-    "prepare": "tsdown"
+    "prepare": "tsdown",
+    "test": "vitest run"
   },
   "dsh": {
     "bundle": {
@@ -36,17 +52,27 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/dsh-web-crawl": "workspace:*",
-    "@deepseek-ai/dsh-web-fetch-browser": "workspace:*",
-    "@deepseek-ai/dsh-web-local-index": "workspace:*",
-    "@deepseek-ai/dsh-web-search-searxng": "workspace:*"
+    "@deepseek-ai/dsh-launch-environment": "^0.0.1-rc.3",
+    "@deepseek-ai/dsh-tools": "^0.1.6-alpha.2",
+    "@deepseek-ai/dsh-util-values": "^0.1.6-alpha.2",
+    "@deepseek-ai/dsh-web": "^0.1.6-alpha.2",
+    "@deepseek-ai/dsh-web-fetch-http": "^0.1.6-alpha.2",
+    "@deepseek-ai/schemastery": "^3.18.2",
+    "@joplin/turndown-plugin-gfm": "^1.0.67",
+    "cheerio": "^1.0.0",
+    "onnxruntime-node": "^1.19.0",
+    "playwright": "^1.52.0",
+    "turndown": "^7.2.4"
   },
   "peerDependencies": {
     "@deepseek-ai/cordis": "^4.0.2"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.2",
+    "@types/node": "^24.0.0",
+    "@types/turndown": "^5.0.6",
     "tsdown": "^0.22.2",
-    "typescript": "^6.0.3"
+    "typescript": "^6.0.3",
+    "vitest": "^3.2.0"
   }
 }
