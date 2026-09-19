@@ -104,3 +104,9 @@ pnpm test
 
 Node ≥ 24 (uses built-in `node:sqlite`). Playwright's Chromium is downloaded on
 `pnpm install` (postinstall) for the browser module.
+
+## Workflow
+
+This repo follows gitflow (`master` / `develop` / `feature/*` / `release/*`)
+with pull requests and semver tags on `master` — see
+[CONTRIBUTING.md](CONTRIBUTING.md). License: [MIT](LICENSE).
