@@ -1,0 +1,54 @@
+{
+  "name": "@deepseek-ai/dsh-web-crawl",
+  "description": "Bounded same-domain site crawling (web_crawl tool) for the DeepSeek Harness web capability bundle",
+  "version": "0.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrrodero/dsh-web-tools.git"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./src/*": "./src/*",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "src",
+    "tests"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "prepare": "tsdown",
+    "test": "vitest run"
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@deepseek-ai/dsh-launch-environment": "^0.0.1-rc.3",
+    "@deepseek-ai/dsh-tools": "^0.1.6-alpha.2",
+    "@deepseek-ai/dsh-util-values": "^0.1.6-alpha.2",
+    "@deepseek-ai/dsh-web": "^0.1.6-alpha.2",
+    "@deepseek-ai/dsh-web-fetch-browser": "workspace:*",
+    "@deepseek-ai/dsh-web-local-index": "workspace:*",
+    "@deepseek-ai/schemastery": "^3.18.2",
+    "cheerio": "^1.0.0"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2",
+    "@types/node": "^24.0.0",
+    "tsdown": "^0.22.2",
+    "typescript": "^6.0.3",
+    "vitest": "^3.2.0"
+  }
+}

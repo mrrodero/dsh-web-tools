@@ -1,0 +1,52 @@
+{
+  "name": "@deepseek-ai/dsh-web-tools",
+  "description": "Locally-hosted, API-free web capability bundle for DeepSeek Harness: SearXNG search, headless-browser fetch, site crawling, and local corpus search",
+  "version": "0.1.0",
+  "publishConfig": {
+    "access": "public"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/mrrodero/dsh-web-tools.git"
+  },
+  "type": "module",
+  "main": "lib/index.js",
+  "types": "lib/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./lib/index.d.ts",
+      "default": "./lib/index.js"
+    },
+    "./cordis.patch.yml": "./cordis.patch.yml",
+    "./package.json": "./package.json"
+  },
+  "files": [
+    "lib",
+    "src",
+    "cordis.patch.yml"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "prepare": "tsdown"
+  },
+  "dsh": {
+    "bundle": {
+      "patch": "./cordis.patch.yml"
+    }
+  },
+  "license": "MIT",
+  "dependencies": {
+    "@deepseek-ai/dsh-web-crawl": "workspace:*",
+    "@deepseek-ai/dsh-web-fetch-browser": "workspace:*",
+    "@deepseek-ai/dsh-web-local-index": "workspace:*",
+    "@deepseek-ai/dsh-web-search-searxng": "workspace:*"
+  },
+  "peerDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2"
+  },
+  "devDependencies": {
+    "@deepseek-ai/cordis": "^4.0.2",
+    "tsdown": "^0.22.2",
+    "typescript": "^6.0.3"
+  }
+}

@@ -1,0 +1,13 @@
+# Bundle layer: register the web capability plugins with the host composition.
+# Search/fetch providers join the ctx.web registry; the tool plugins register
+# their model-facing tools (web_render, web_crawl, local_search) in the global
+# tool layer, which every agent scope inherits.
+- insert:
+    - id: web-search-searxng
+      name: '@deepseek-ai/dsh-web-search-searxng'
+    - id: web-fetch-browser
+      name: '@deepseek-ai/dsh-web-fetch-browser'
+    - id: web-crawl
+      name: '@deepseek-ai/dsh-web-crawl'
+    - id: web-local-index
+      name: '@deepseek-ai/dsh-web-local-index'
