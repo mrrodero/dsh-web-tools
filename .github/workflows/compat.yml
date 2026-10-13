@@ -1,4 +1,5 @@
 # DSH compatibility gate.
+# Triggered on pushes to develop/master and on pull requests.
 #
 # When a new DeepSeek Harness release ships:
 #   1. Add its version to the `dsh` matrix below (build/test/peer gate).
