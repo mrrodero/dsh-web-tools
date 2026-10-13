@@ -52,11 +52,6 @@
   },
   "license": "MIT",
   "dependencies": {
-    "@deepseek-ai/dsh-launch-environment": "^0.0.1-rc.3",
-    "@deepseek-ai/dsh-tools": "^0.1.6-alpha.2",
-    "@deepseek-ai/dsh-util-values": "^0.1.6-alpha.2",
-    "@deepseek-ai/dsh-web": "^0.1.6-alpha.2",
-    "@deepseek-ai/dsh-web-fetch-http": "^0.1.6-alpha.2",
     "@deepseek-ai/schemastery": "^3.18.2",
     "@joplin/turndown-plugin-gfm": "^1.0.67",
     "cheerio": "^1.0.0",
@@ -65,12 +60,23 @@
     "turndown": "^7.2.4"
   },
   "peerDependencies": {
-    "@deepseek-ai/cordis": "^4.0.2"
+    "@deepseek-ai/cordis": "^4.0.2",
+    "@deepseek-ai/dsh-launch-environment": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-alpha.1 <0.2.2",
+    "@deepseek-ai/dsh-tools": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-alpha.1 <0.2.2",
+    "@deepseek-ai/dsh-util-values": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-alpha.1 <0.2.2",
+    "@deepseek-ai/dsh-web": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-alpha.1 <0.2.2",
+    "@deepseek-ai/dsh-web-fetch-http": ">=0.2.0-rc.2 <0.2.1 || >=0.2.1-alpha.1 <0.2.2"
   },
   "devDependencies": {
     "@deepseek-ai/cordis": "^4.0.2",
+    "@deepseek-ai/dsh-launch-environment": "0.2.1-alpha.2",
+    "@deepseek-ai/dsh-tools": "0.2.1-alpha.2",
+    "@deepseek-ai/dsh-util-values": "0.2.1-alpha.2",
+    "@deepseek-ai/dsh-web": "0.2.1-alpha.2",
+    "@deepseek-ai/dsh-web-fetch-http": "0.2.1-alpha.2",
     "@types/node": "^24.0.0",
     "@types/turndown": "^5.0.6",
+    "semver": "^7.7.3",
     "tsdown": "^0.22.2",
     "typescript": "^6.0.3",
     "vitest": "^3.2.0"

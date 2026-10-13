@@ -1,0 +1,155 @@
+# DSH compatibility gate.
+# Triggered on pushes to develop/master and on pull requests.
+#
+# When a new DeepSeek Harness release ships:
+#   1. Add its version to the `dsh` matrix below (build/test/peer gate).
+#   2. If it is the new baseline, bump DSH_RUNTIME_VERSION and the exact
+#      devDependency pins in package.json.
+# If the plugin's peer range does not cover the new runtime, the peer gate
+# fails loudly instead of the plugin silently breaking in live profiles.
+name: DSH compatibility
+
+on:
+  push:
+    branches: [develop, master]
+  pull_request:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  DSH_RUNTIME_VERSION: 0.2.1-alpha.2
+  PNPM_VERSION: 11.28.5
+  NODE_VERSION: '24'
+
+jobs:
+  build-test-matrix:
+    name: build+test (dsh ${{ matrix.dsh }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        dsh:
+          - 0.2.0-rc.2
+          - 0.2.1-alpha.1
+          - 0.2.1-alpha.2
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install dependencies
+        run: pnpm install
+      - name: Pin DSH peers at ${{ matrix.dsh }}
+        run: |
+          pnpm add -D \
+            "@deepseek-ai/dsh-launch-environment@${{ matrix.dsh }}" \
+            "@deepseek-ai/dsh-tools@${{ matrix.dsh }}" \
+            "@deepseek-ai/dsh-util-values@${{ matrix.dsh }}" \
+            "@deepseek-ai/dsh-web@${{ matrix.dsh }}" \
+            "@deepseek-ai/dsh-web-fetch-http@${{ matrix.dsh }}"
+      - name: Build
+        run: pnpm build
+      - name: Test
+        run: pnpm test
+      - name: Peer compatibility gate
+        run: node scripts/check-peer-compat.mjs "${{ matrix.dsh }}"
+      - name: Assert one DSH version per package in the lockfile
+        run: |
+          set -euo pipefail
+          for pkg in dsh-launch-environment dsh-tools dsh-util-values dsh-web dsh-web-fetch-http; do
+            # Snapshot keys are 'pkg@version' or 'pkg@version(<peer suffix>)';
+            # stop at the first quote or '(' so peer suffixes never leak in.
+            versions=$(grep -oE "'@deepseek-ai/${pkg}@[0-9][^'\"(]*" pnpm-lock.yaml | sed -E "s/^.*@//" | sort -u)
+            count=$(printf '%s\n' "$versions" | grep -c .)
+            if [ "$count" -ne 1 ]; then
+              echo "::error::@deepseek-ai/${pkg} resolved to more than one version: $versions"
+              exit 1
+            fi
+            echo "@deepseek-ai/${pkg} -> $versions"
+          done
+
+  profile-install:
+    name: profile install (dsh ${{ env.DSH_RUNTIME_VERSION }})
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: ${{ env.PNPM_VERSION }}
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: pnpm
+      - name: Install published DSH CLI
+        run: npm install -g "@deepseek-ai/dsh@${{ env.DSH_RUNTIME_VERSION }}"
+      - name: Verify CLI version
+        run: |
+          set -euo pipefail
+          actual=$(dsh --version)
+          [ "$actual" = "${{ env.DSH_RUNTIME_VERSION }}" ] || { echo "::error::dsh --version = $actual"; exit 1; }
+      - name: Pack plugin
+        run: pnpm pack
+      - name: Pre-create profile (allow onnxruntime-node build script)
+        run: |
+          set -euo pipefail
+          mkdir -p "$HOME/.dsh/profiles/ci-test"
+          printf '%s\n' \
+            'packages:' \
+            '  - .' \
+            '' \
+            'nodeLinker: hoisted' \
+            'autoInstallPeers: false' \
+            'allowBuilds:' \
+            '  onnxruntime-node: true' \
+            > "$HOME/.dsh/profiles/ci-test/pnpm-workspace.yaml"
+      - name: Install plugin into profile
+        run: dsh plugin --profile ci-test install "file:$GITHUB_WORKSPACE/$(ls deepseek-ai-dsh-web-tools-*.tgz)"
+      - name: Assert no version exemptions granted
+        run: |
+          set -euo pipefail
+          exemptions=$(dsh plugin --profile ci-test version-exemptions)
+          [ "$exemptions" = "{}" ] || { echo "::error::expected no version exemptions, got: $exemptions"; exit 1; }
+      - name: Assert plugin activated as profile bundle
+        run: |
+          set -euo pipefail
+          node -e '
+            const fs = require("node:fs")
+            const manifest = JSON.parse(fs.readFileSync(process.argv[1], "utf8"))
+            const bundles = manifest.dsh?.profile?.bundles ?? []
+            if (!manifest.dependencies?.["@deepseek-ai/dsh-web-tools"]) {
+              console.error("::error::plugin missing from profile dependencies")
+              process.exit(1)
+            }
+            if (!bundles.includes("@deepseek-ai/dsh-web-tools")) {
+              console.error(`::error::plugin not in dsh.profile.bundles: ${JSON.stringify(bundles)}`)
+              process.exit(1)
+            }
+            console.log("bundles:", JSON.stringify(bundles))
+          ' "$HOME/.dsh/profiles/ci-test/package.json"
+      - name: Assert all four entries in dumped config
+        run: |
+          set -euo pipefail
+          cfg=$(dsh --profile ci-test --dump-config)
+          for id in web-search-searxng web-fetch-browser web-crawl web-local-index; do
+            printf '%s\n' "$cfg" | grep -q "id: $id" || { echo "::error::missing entry $id in dumped config"; exit 1; }
+          done
+          if printf '%s\n' "$cfg" | grep -q 'skipping profile bundle'; then
+            echo "::error::a profile bundle was skipped during config composition"
+            exit 1
+          fi
+          echo "all four dsh-web-tools entries present"
